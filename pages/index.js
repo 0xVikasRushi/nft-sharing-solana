@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
+import ConnectWalletButton from "./../components/ConnectWalletbutton";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
         </h1>
 
         <p className={styles.description}>Wallet Connect</p>
+        <ConnectWalletButton />
 
         <div className={styles.grid}>
           <a href="https://nextjs.org/learn" className={styles.card}>
