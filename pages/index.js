@@ -1,14 +1,34 @@
 import styles from "../styles/Home.module.css";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import useIsMounted from "./api/utils/useIsMounted";
-import { connection } from "./api/utils/constant";
-import { PublicKey } from "@solana/web3.js";
+import { connections } from "./api/utils/constant";
+import { getParsedNftAccountsByOwner } from "@nfteyez/sol-rayz";
+import axios from "axios";
 export default function Home() {
-  const getBalance = async () => {
-    // const req = await connection.getBalance();
-    // const res = await req.json();
-    console.log(PublicKey);
+  const getnfts = async () => {
+    const nfts = await getParsedNftAccountsByOwner({
+      publicAddress: "3bdsYqEthFJK6dYtM7uDnwdfYHXDFHP56wRhQrL7m3iv",
+      connection: connections,
+      serialization: true,
+    });
+    let uris = [];
+    for (let i = 0; i < nfts.length; i++) {
+      const uri = nfts[i]["data"]["uri"];
+      uris.push(uri);
+    }
+    // let arr = [];
+    // let n = uris.length;
+    // for (let i = 0; i < n; i++) {
+    //   console.log(uris[i].data.uri);
+    //   let val = await axios.get(uris[i].data.uri);
+    //   arr.push(val);
+    // }
+    // console.log(arr);
+    const val = await axios.get(uris[0]);
+    console.log(val);
+    return uris;
   };
+
   const getProviderPublicKey = () => {
     if ("solana" in window) {
       const provider = window.solana;
@@ -18,10 +38,6 @@ export default function Home() {
       }
     }
   };
-  const getRecentBlockInfo = async () => {
-    const recentInfo = await connection.getEpochInfo();
-    console.log("~~~~~~~~~~~~~~~~~EPOCH INFO~~~~~~~~~~~~\n", recentInfo);
-  };
 
   const mounted = useIsMounted();
   return (
@@ -30,7 +46,7 @@ export default function Home() {
         <h1 className={styles.title}>Nft transfer using solana</h1>
         {mounted && <WalletMultiButton />}
       </div>
-      <button onClick={getRecentBlockInfo}>button </button>
+      <button onClick={getnfts}>button </button>
     </div>
   );
 }
