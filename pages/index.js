@@ -2,31 +2,48 @@ import styles from "../styles/Home.module.css";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import useIsMounted from "./api/utils/useIsMounted";
 import { connections } from "./api/utils/constant";
+
 import { getParsedNftAccountsByOwner } from "@nfteyez/sol-rayz";
 import axios from "axios";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useState } from "react";
+
 export default function Home() {
-  const getnfts = async () => {
-    const nfts = await getParsedNftAccountsByOwner({
-      publicAddress: "3bdsYqEthFJK6dYtM7uDnwdfYHXDFHP56wRhQrL7m3iv",
-      connection: connections,
-      serialization: true,
-    });
-    let uris = [];
-    for (let i = 0; i < nfts.length; i++) {
-      const uri = nfts[i]["data"]["uri"];
-      uris.push(uri);
+  const [nft, setnft] = useState(null);
+  const { connected, publicKey } = useWallet();
+  let ownerToken;
+  const getAllNftData = async () => {
+    try {
+      if (connected === true) {
+        ownerToken = publicKey?.toBase58();
+        const nfts = await getParsedNftAccountsByOwner({
+          publicAddress: ownerToken,
+          connection: connections,
+          serialization: true,
+        });
+        return nfts;
+      }
+    } catch (error) {
+      console.log(error);
     }
-    // let arr = [];
-    // let n = uris.length;
-    // for (let i = 0; i < n; i++) {
-    //   console.log(uris[i].data.uri);
-    //   let val = await axios.get(uris[i].data.uri);
-    //   arr.push(val);
-    // }
-    // console.log(arr);
-    const val = await axios.get(uris[0]);
-    console.log(val);
-    return uris;
+  };
+  const getnfts = async () => {
+    try {
+      let nftData = await getAllNftData();
+      var data = Object.keys(nftData).map((key) => nftData[key]);
+      let arr = [];
+      let n = data.length;
+      for (let i = 0; i < n; i++) {
+        console.log(data[i].data.uri);
+        let val = await axios.get(data[i].data.uri);
+        arr.push(val);
+      }
+      setnft(arr);
+      console.log(nft);
+      return arr;
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const getProviderPublicKey = () => {
@@ -45,8 +62,18 @@ export default function Home() {
       <div className={styles.main}>
         <h1 className={styles.title}>Nft transfer using solana</h1>
         {mounted && <WalletMultiButton />}
+        <h1>{ownerToken}</h1>
       </div>
       <button onClick={getnfts}>button </button>
+      <div>
+        {nft &&
+          nft.map((signal) => (
+            <div key={signal.data.name || Math.random}>
+              <h2>{signal.data.name}</h2>
+              <img src={signal.data.image} alt={signal.data.name} />
+            </div>
+          ))}
+      </div>
     </div>
   );
 }
