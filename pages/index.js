@@ -8,12 +8,17 @@ import axios from "axios";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 
+
+
 export default function Home() {
   const [nft, setnft] = useState(null);
   const { connected, publicKey } = useWallet();
+  const [loading, setloading] = useState(false);
+
   let ownerToken;
   const getAllNftData = async () => {
     try {
+      setloading(true);
       if (connected === true) {
         ownerToken = publicKey?.toBase58();
         const nfts = await getParsedNftAccountsByOwner({
@@ -38,41 +43,78 @@ export default function Home() {
         let val = await axios.get(data[i].data.uri);
         arr.push(val);
       }
+      setloading(false);
       setnft(arr);
-      console.log(nft);
       return arr;
     } catch (error) {
       console.log(error);
     }
   };
 
-  const getProviderPublicKey = () => {
-    if ("solana" in window) {
-      const provider = window.solana;
-      if (provider.isPhantom) {
-        console.log(provider._publicKey);
-        return provider;
-      }
-    }
-  };
+ 
 
   const mounted = useIsMounted();
   return (
-    <div className={styles.container}>
-      <div className={styles.main}>
-        <h1 className={styles.title}>Nft transfer using solana</h1>
+    <div
+      className={styles.container}
+      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+    >
+      <div
+        className={styles.main}
+        style={{ maxWidth: "600px", width: "100%", padding: "0 20px" }}
+      >
+        <h1
+          className={styles.title}
+          style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "20px" }}
+        >
+          Nft transfer using Solana
+        </h1>
         {mounted && <WalletMultiButton />}
-        <h1>{ownerToken}</h1>
-      </div>
-      <button onClick={getnfts}>button </button>
-      <div>
-        {nft &&
-          nft.map((signal) => (
-            <div key={signal.data.name || Math.random}>
-              <h2>{signal.data.name}</h2>
-              <img src={signal.data.image} alt={signal.data.name} />
+        {connected && (
+          <div>
+            <button
+              onClick={getnfts}
+              style={{
+                backgroundColor: "#4CAF50",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                padding: "10px 20px",
+                margin: "20px 0",
+              }}
+            >
+              {loading ? "Fetching nfts please wait " : "My nfts"}
+            </button>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+              }}
+            >
+              {nft &&
+                nft.map((signal) =>
+                  signal.data.image ? (
+                    <div
+                      key={signal.data.name || Math.random}
+                      style={{ margin: "10px", textAlign: "center" }}
+                    >
+                      <h2 style={{ fontSize: "1.2rem", marginBottom: "10px" }}>
+                        {signal.data.name}
+                      </h2>
+                      <img
+                        src={signal.data.image}
+                        alt={signal.data.name}
+                        style={{ maxWidth: "200px" }}
+                      />
+                    </div>
+                  ) : (
+                    <></>
+                  )
+                )}
             </div>
-          ))}
+          </div>
+        )}
       </div>
     </div>
   );
