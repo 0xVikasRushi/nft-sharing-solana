@@ -2,17 +2,15 @@ import styles from "../styles/Home.module.css";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import useIsMounted from "./api/utils/useIsMounted";
 import { connections } from "./api/utils/constant";
-
 import { getParsedNftAccountsByOwner } from "@nfteyez/sol-rayz";
 import axios from "axios";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
-
-
+import { PublicKey } from "@solana/web3.js";
 
 export default function Home() {
   const [nft, setnft] = useState(null);
-  const { connected, publicKey } = useWallet();
+  const { connected, publicKey, wallet } = useWallet();
   const [loading, setloading] = useState(false);
 
   let ownerToken;
@@ -32,6 +30,37 @@ export default function Home() {
       console.log(error);
     }
   };
+  // const mintAddress = "8MdXvWgNou9jRVturbfnt3egf1aP9p1AjL8wiJavti7F";
+  const transferNft = async (mintAddress, recipient) => {
+    // Replace with the recipient's Solana address
+    try {
+      const amount = 1;
+      const transaction = new transaction().add(
+        transferChecked({
+          source: "8iR3Y4TiogikopKEiCXCW3xtQsYk9PZWRSRJSPMQW8AF",
+          mint: "6N5VuwXevoDvjSdcGUNAijQ4yk2QqRcVgx8YXjxp5HpV",
+          decimals: 0,
+          amount,
+          destination: new PublicKey(
+            "3bdsYqEthFJK6dYtM7uDnwdfYHXDFHP56wRhQrL7m3iv"
+          ),
+          owner: wallet.publicKey,
+        })
+      );
+      transaction.feePayer = wallet.publicKey;
+      const txid = await transaction(connections, wallet, transaction);
+      console.log(txid);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  function test() {
+    transferNft(
+      "6N5VuwXevoDvjSdcGUNAijQ4yk2QqRcVgx8YXjxp5HpV",
+      "3bdsYqEthFJK6dYtM7uDnwdfYHXDFHP56wRhQrL7m3iv"
+    );
+  }
   const getnfts = async () => {
     try {
       let nftData = await getAllNftData();
@@ -51,8 +80,6 @@ export default function Home() {
     }
   };
 
- 
-
   const mounted = useIsMounted();
   return (
     <div
@@ -69,6 +96,7 @@ export default function Home() {
         >
           Nft transfer using Solana
         </h1>
+        <h3>default recipient 8MdXvWgNou9jRVturbfnt3egf1aP9p1AjL8wiJavti7F</h3>
         {mounted && <WalletMultiButton />}
         {connected && (
           <div>
@@ -115,7 +143,8 @@ export default function Home() {
             </div>
           </div>
         )}
-      </div>
+        <button onClick={test}>sent NFT</button>{" "}
+      </div>{" "}
     </div>
   );
 }
