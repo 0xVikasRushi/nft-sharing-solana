@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Connection, PublicKey } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  SystemProgram,
+} from "@solana/web3.js";
 
 const NftTransfer = ({ wallets }) => {
   const [nftAccounts, setNftAccounts] = useState([]);
@@ -50,17 +55,15 @@ const NftTransfer = ({ wallets }) => {
     const instructions = [];
     const signers = [];
 
-
     const transferInstruction = Token.createTransferInstruction(
       "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
       new PublicKey(selectedNft),
       new PublicKey(toAddress),
       wallets.publicKey,
       [],
-      1 
+      1
     );
     instructions.push(transferInstruction);
-
 
     const transaction = new Transaction().add(...instructions);
     await sendTransaction(connection, wallets, transaction, signers);
@@ -97,5 +100,4 @@ const NftTransfer = ({ wallets }) => {
   );
 };
 
-
-export default NftTransfer
+export default NftTransfer;

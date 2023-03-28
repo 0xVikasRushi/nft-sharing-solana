@@ -6,13 +6,19 @@ import { getParsedNftAccountsByOwner } from "@nfteyez/sol-rayz";
 import axios from "axios";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
-import { PublicKey } from "@solana/web3.js";
+import { transferChecked } from "@solana/spl-token";
+
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  SystemProgram,
+} from "@solana/web3.js";
 
 export default function Home() {
   const [nft, setnft] = useState(null);
   const { connected, publicKey, wallet } = useWallet();
   const [loading, setloading] = useState(false);
-
   let ownerToken;
   const getAllNftData = async () => {
     try {
@@ -30,37 +36,34 @@ export default function Home() {
       console.log(error);
     }
   };
-  // const mintAddress = "8MdXvWgNou9jRVturbfnt3egf1aP9p1AjL8wiJavti7F";
-  const transferNft = async (mintAddress, recipient) => {
-    // Replace with the recipient's Solana address
+  const transferNft = async (
+    mintAddress,
+    recipient = "8MdXvWgNou9jRVturbfnt3egf1aP9p1AjL8wiJavti7F"
+  ) => {
     try {
       const amount = 1;
-      const transaction = new transaction().add(
+      const transaction = new Transaction().add(
         transferChecked({
-          source: "8iR3Y4TiogikopKEiCXCW3xtQsYk9PZWRSRJSPMQW8AF",
-          mint: "6N5VuwXevoDvjSdcGUNAijQ4yk2QqRcVgx8YXjxp5HpV",
+          source: ownerToken,
+          mint: mintAddress,
           decimals: 0,
           amount,
-          destination: new PublicKey(
-            "3bdsYqEthFJK6dYtM7uDnwdfYHXDFHP56wRhQrL7m3iv"
-          ),
-          owner: wallet.publicKey,
+          destination: new PublicKey(recipient),
+          owner: ownerToken,
         })
       );
-      transaction.feePayer = wallet.publicKey;
-      const txid = await transaction(connections, wallet, transaction);
-      console.log(txid);
+      transaction.feePayer = ownerToken;
+      const txid = await connections.sendTransaction(transaction, [wallet]);
+      console.log("Transaction ID:", txid);
     } catch (error) {
-      console.log(error);
+      console.log("Error:", error);
     }
   };
 
-  function test() {
-    transferNft(
-      "6N5VuwXevoDvjSdcGUNAijQ4yk2QqRcVgx8YXjxp5HpV",
-      "3bdsYqEthFJK6dYtM7uDnwdfYHXDFHP56wRhQrL7m3iv"
-    );
+  function tes() {
+    transferNft("6N5VuwXevoDvjSdcGUNAijQ4yk2QqRcVgx8YXjxp5HpV");
   }
+
   const getnfts = async () => {
     try {
       let nftData = await getAllNftData();
@@ -143,7 +146,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        <button onClick={test}>sent NFT</button>{" "}
+        <button onClick={tes}>sent NFT</button>{" "}
       </div>{" "}
     </div>
   );
